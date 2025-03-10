@@ -5,6 +5,9 @@ import "./index.css";
 import { BrowserRouter } from "react-router-dom";
 import { UserProvider } from "./components/auth/UserContext";
 
+// Import Firebase configuration
+import "./lib/firebase";
+
 import { TempoDevtools } from "tempo-devtools";
 TempoDevtools.init();
 

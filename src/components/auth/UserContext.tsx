@@ -1,4 +1,14 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
+import { 
+  User as FirebaseUser,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signInWithPopup,
+  GoogleAuthProvider,
+  signOut,
+  onAuthStateChanged
+} from "firebase/auth";
+import { auth } from "@/lib/firebase";
 
 type User = {
   id: string;
@@ -25,30 +35,32 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user is already logged in (e.g., from localStorage)
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-    setIsLoading(false);
+    // Listen for auth state changes
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      if (firebaseUser) {
+        // User is signed in
+        const userData: User = {
+          id: firebaseUser.uid,
+          name: firebaseUser.displayName || "User",
+          email: firebaseUser.email || "",
+          avatar: firebaseUser.photoURL || undefined,
+        };
+        setUser(userData);
+      } else {
+        // User is signed out
+        setUser(null);
+      }
+      setIsLoading(false);
+    });
+
+    // Cleanup subscription on unmount
+    return () => unsubscribe();
   }, []);
 
   const login = async (email: string, password: string) => {
     setIsLoading(true);
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // Mock user data
-      const userData = {
-        id: "user-123",
-        name: "John Doe",
-        email,
-        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=john",
-      };
-
-      setUser(userData);
-      localStorage.setItem("user", JSON.stringify(userData));
+      await signInWithEmailAndPassword(auth, email, password);
     } catch (error) {
       console.error("Login failed", error);
       throw error;
@@ -60,19 +72,8 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
   const loginWithGoogle = async () => {
     setIsLoading(true);
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // Mock user data
-      const userData = {
-        id: "user-456",
-        name: "Google User",
-        email: "user@gmail.com",
-        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=google",
-      };
-
-      setUser(userData);
-      localStorage.setItem("user", JSON.stringify(userData));
+      const provider = new GoogleAuthProvider();
+      await signInWithPopup(auth, provider);
     } catch (error) {
       console.error("Google login failed", error);
       throw error;
@@ -84,19 +85,9 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
   const signup = async (name: string, email: string, password: string) => {
     setIsLoading(true);
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // Mock user data
-      const userData = {
-        id: "user-789",
-        name,
-        email,
-        avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${name.replace(/ /g, "")}`,
-      };
-
-      setUser(userData);
-      localStorage.setItem("user", JSON.stringify(userData));
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      // Note: To set display name, you would need to update the profile
+      // This is simplified for now
     } catch (error) {
       console.error("Signup failed", error);
       throw error;
@@ -105,9 +96,12 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem("user");
+  const logout = async () => {
+    try {
+      await signOut(auth);
+    } catch (error) {
+      console.error("Logout failed", error);
+    }
   };
 
   return (

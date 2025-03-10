@@ -10,6 +10,12 @@ import { Loader2, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "./ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 
+type Section = {
+  title: string;
+  type: "overall" | "strengths" | "weaknesses" | "suggestions";
+  content: string | string[];
+};
+
 type AnalysisResultsProps = {
   isLoading?: boolean;
   results?: {
@@ -24,6 +30,7 @@ type AnalysisResultsProps = {
       relevance: number;
       atsCompatibility: number;
     };
+    sections?: Section[];
   };
   visible?: boolean;
   className?: string;
@@ -186,10 +193,59 @@ const AnalysisResults = ({
                   data={sectionScores}
                 />
 
-                <KeywordAnalysis title="Keyword Analysis" />
+                <KeywordAnalysis 
+                  title="Keyword Analysis" 
+                  keywords={[
+                    { word: "project management", count: 3, relevance: "high" },
+                    { word: "leadership", count: 2, relevance: "high" },
+                    { word: "communication", count: 4, relevance: "high" },
+                    { word: "teamwork", count: 3, relevance: "medium" },
+                  ]}
+                />
 
                 <div className="md:col-span-2">
-                  <ComparisonTable title="Section-by-Section Analysis" />
+                  {results.sections && results.sections.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {results.sections.map((section, index) => (
+                        <ResultCard
+                          key={index}
+                          title={section.title}
+                          type={section.type}
+                          content={section.content}
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    <ComparisonTable 
+                      title="Section-by-Section Analysis" 
+                      items={[
+                        {
+                          category: "Professional Experience",
+                          yourScore: 75,
+                          industryAvg: 70,
+                          difference: 5,
+                        },
+                        {
+                          category: "Education",
+                          yourScore: 80,
+                          industryAvg: 75,
+                          difference: 5,
+                        },
+                        {
+                          category: "Skills",
+                          yourScore: 65,
+                          industryAvg: 80,
+                          difference: -15,
+                        },
+                        {
+                          category: "Layout & Formatting",
+                          yourScore: 60,
+                          industryAvg: 75,
+                          difference: -15,
+                        },
+                      ]}
+                    />
+                  )}
                 </div>
               </div>
             </TabsContent>
@@ -216,7 +272,35 @@ const AnalysisResults = ({
                 />
 
                 <div className="md:col-span-2">
-                  <ComparisonTable title="Industry Standards Comparison" />
+                  <ComparisonTable 
+                    title="Industry Standards Comparison" 
+                    items={[
+                      {
+                        category: "Content Quality",
+                        yourScore: results.scores?.content || 68,
+                        industryAvg: 72,
+                        difference: ((results.scores?.content || 68) - 72),
+                      },
+                      {
+                        category: "Formatting",
+                        yourScore: results.scores?.formatting || 85,
+                        industryAvg: 78,
+                        difference: ((results.scores?.formatting || 85) - 78),
+                      },
+                      {
+                        category: "Relevance",
+                        yourScore: results.scores?.relevance || 65,
+                        industryAvg: 70,
+                        difference: ((results.scores?.relevance || 65) - 70),
+                      },
+                      {
+                        category: "ATS Compatibility",
+                        yourScore: results.scores?.atsCompatibility || 62,
+                        industryAvg: 68,
+                        difference: ((results.scores?.atsCompatibility || 62) - 68),
+                      },
+                    ]}
+                  />
                 </div>
               </div>
             </TabsContent>
@@ -224,9 +308,31 @@ const AnalysisResults = ({
             {/* ATS Compatibility Tab */}
             <TabsContent value="ats" className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <AtsCompatibilityScore />
+                <AtsCompatibilityScore 
+                  score={results.scores?.atsCompatibility || 62}
+                  issues={[
+                    { issue: "Missing job-specific keywords", severity: "high" },
+                    { issue: "Complex formatting may not parse correctly", severity: "medium" },
+                    { issue: "Tables used for layout", severity: "high" },
+                    { issue: "Headers/footers contain important information", severity: "medium" },
+                    { issue: "Non-standard section headings", severity: "low" },
+                  ]}
+                />
 
-                <KeywordAnalysis title="ATS Keyword Analysis" />
+                <KeywordAnalysis 
+                  title="ATS Keyword Analysis" 
+                  keywords={[
+                    { word: "project management", count: 3, relevance: "high" },
+                    { word: "leadership", count: 2, relevance: "high" },
+                    { word: "communication", count: 4, relevance: "high" },
+                    { word: "teamwork", count: 3, relevance: "medium" },
+                  ]}
+                  missingKeywords={[
+                    { word: "scrum", count: 0, relevance: "high", missing: true },
+                    { word: "kanban", count: 0, relevance: "medium", missing: true },
+                    { word: "stakeholder management", count: 0, relevance: "high", missing: true },
+                  ]}
+                />
 
                 <div className="md:col-span-2">
                   <ResultCard
