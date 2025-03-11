@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -13,6 +12,7 @@ import { Check, X, Loader2 } from "lucide-react";
 import { createCheckoutSession, getPolarPlans, PolarPlan } from "@/lib/polar";
 import { useAuth } from "@/lib/auth";
 import { toast } from "@/components/ui/use-toast";
+import { SubscriptionButton } from "./SubscriptionButton";
 
 const defaultPlans = [
   {
@@ -205,7 +205,8 @@ const PricingPage = () => {
               </CardContent>
 
               <CardFooter className="mt-6">
-                <Button
+                <SubscriptionButton
+                  planId={plan.id}
                   className={`w-full ${
                     loading ? "opacity-50 cursor-not-allowed" : ""
                   } ${
@@ -216,8 +217,6 @@ const PricingPage = () => {
                       : ""
                   }`}
                   variant={plan.name === "Professional" ? "default" : "outline"}
-                  onClick={() => handleSubscribe(plan)}
-                  disabled={loading}
                 >
                   {loading ? (
                     <Loader2 className="h-5 w-5 animate-spin" />
@@ -228,7 +227,7 @@ const PricingPage = () => {
                   ) : (
                     `Start ${plan.name} Plan`
                   )}
-                </Button>
+                </SubscriptionButton>
               </CardFooter>
             </Card>
           ))}

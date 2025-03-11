@@ -14,11 +14,18 @@ import {
   Legend,
 } from "recharts";
 
+// Define specific data types for each chart type
+type ChartDataItem = {
+  name: string;
+  value: number;
+  color?: string;
+};
+
 type AnalyticsChartProps = {
   type: "bar" | "pie" | "radar";
   title: string;
   description?: string;
-  data: any[];
+  data: ChartDataItem[];
   className?: string;
 };
 

@@ -5,14 +5,16 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import UploadSection from "@/components/UploadSection";
 import AnalysisResults from "@/components/AnalysisResults";
+import ErrorBoundary from "@/components/ErrorBoundary";
+import { AnalysisResults as AnalysisResultsType } from "@/types/analysis";
 
 const Upload = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [analysisResults, setAnalysisResults] = useState<any>(null);
+  const [analysisResults, setAnalysisResults] = useState<AnalysisResultsType | null>(null);
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  const handleFileUpload = async (file: File, results: any) => {
+  const handleFileUpload = async (file: File, results: AnalysisResultsType) => {
     setIsAnalyzing(true);
     try {
       setAnalysisResults(results);
@@ -38,13 +40,17 @@ const Upload = () => {
           </p>
 
           {!analysisResults ? (
-            <UploadSection onFileUploaded={handleFileUpload} />
+            <ErrorBoundary>
+              <UploadSection onFileUploaded={handleFileUpload} />
+            </ErrorBoundary>
           ) : (
             <div className="w-full">
-              <AnalysisResults
-                isLoading={isAnalyzing}
-                results={analysisResults}
-              />
+              <ErrorBoundary>
+                <AnalysisResults
+                  isLoading={isAnalyzing}
+                  results={analysisResults}
+                />
+              </ErrorBoundary>
               <div className="mt-8 flex justify-center gap-4">
                 <button
                   onClick={() => setAnalysisResults(null)}

@@ -1,180 +1,125 @@
-import React, { useState } from "react";
-import { Button } from "./ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "./ui/card";
-import { Separator } from "./ui/separator";
-import { Download, ArrowLeft, ChevronDown, ChevronUp, CheckCircle, AlertCircle, LightbulbIcon } from "lucide-react";
-import ResultCard from "./ResultCard";
+import React from 'react';
+import { AnalysisResults } from '@/lib/types/analysis';
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { Button } from './ui/button';
+import { ArrowLeft, Download, Share2 } from 'lucide-react';
+import { PremiumFeature } from './PremiumFeature';
 
-type DetailedAnalysisProps = {
-  analysisData?: {
-    overall: string | string[];
-    strengths: string[];
-    weaknesses: string[];
-    suggestions: string[];
-    sections: {
-      title: string;
-      content: string | string[];
-      type: "overall" | "strengths" | "weaknesses" | "suggestions";
-    }[];
+interface DetailedAnalysisProps {
+  analysisData: AnalysisResults;
+  onBack: () => void;
+}
+
+export function DetailedAnalysis({ analysisData, onBack }: DetailedAnalysisProps) {
+  const handleExportPDF = () => {
+    // Implement PDF export logic
+    console.log('Exporting to PDF...');
   };
-  onBack?: () => void;
-};
 
-const DetailedAnalysis = ({
-  analysisData,
-  onBack = () => console.log("Back button clicked"),
-}: DetailedAnalysisProps) => {
-  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
-
-  if (!analysisData) {
-    return null;
-  }
-
-  const toggleSection = (section: string) => {
-    setExpandedSections((prev) => ({
-      ...prev,
-      [section]: !prev[section],
-    }));
+  const handleShare = () => {
+    // Implement sharing logic
+    console.log('Sharing analysis...');
   };
 
   return (
-    <div className="w-full max-w-5xl mx-auto p-6 bg-white rounded-lg shadow-md">
-      <div className="flex items-center mb-6">
-        <Button variant="ghost" onClick={onBack} className="mr-2">
-          <ArrowLeft className="h-5 w-5 mr-2" />
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <Button variant="ghost" onClick={onBack} className="gap-2">
+          <ArrowLeft className="h-4 w-4" />
           Back to Summary
         </Button>
-        <h1 className="text-2xl font-bold text-gray-800 flex-1 text-center">
-          Detailed CV Analysis
-        </h1>
-        <Button variant="outline" className="ml-auto">
-          <Download className="h-5 w-5 mr-2" />
-          Download Report
-        </Button>
-      </div>
-
-      <Tabs defaultValue="overview" className="space-y-4">
-        <TabsList className="grid grid-cols-4 mb-6">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="strengths">Strengths</TabsTrigger>
-          <TabsTrigger value="weaknesses">Areas to Improve</TabsTrigger>
-          <TabsTrigger value="suggestions">Suggestions</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="overview">
-          <Card>
-            <CardHeader>
-              <CardTitle>Overall Assessment</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-700">{analysisData.overall}</p>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="strengths">
-          <Card>
-            <CardHeader>
-              <CardTitle>Key Strengths</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-2">
-                {analysisData.strengths?.map((strength, index) => (
-                  <li key={index} className="flex items-start">
-                    <CheckCircle className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
-                    <span>{strength}</span>
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="weaknesses">
-          <Card>
-            <CardHeader>
-              <CardTitle>Areas for Improvement</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-2">
-                {analysisData.weaknesses?.map((weakness, index) => (
-                  <li key={index} className="flex items-start">
-                    <AlertCircle className="h-5 w-5 text-amber-500 mr-2 mt-0.5" />
-                    <span>{weakness}</span>
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="suggestions">
-          <Card>
-            <CardHeader>
-              <CardTitle>Improvement Suggestions</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-2">
-                {analysisData.suggestions?.map((suggestion, index) => (
-                  <li key={index} className="flex items-start">
-                    <LightbulbIcon className="h-5 w-5 text-blue-500 mr-2 mt-0.5" />
-                    <span>{suggestion}</span>
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
-
-      {analysisData.sections && (
-        <div className="mt-8">
-          <h3 className="text-xl font-semibold mb-4">Section Analysis</h3>
-          <div className="space-y-4">
-            {analysisData.sections.map((section, index) => (
-              <Card key={index}>
-                <CardHeader>
-                  <CardTitle>{section.title}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {Array.isArray(section.content) ? (
-                    <ul className="space-y-2">
-                      {section.content.map((item, idx) => (
-                        <li key={idx}>{item}</li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p>{section.content}</p>
-                  )}
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+        <div className="flex gap-2">
+          <PremiumFeature feature="pdfExport">
+            <Button variant="outline" onClick={handleExportPDF} className="gap-2">
+              <Download className="h-4 w-4" />
+              Export PDF
+            </Button>
+          </PremiumFeature>
+          <Button variant="outline" onClick={handleShare} className="gap-2">
+            <Share2 className="h-4 w-4" />
+            Share
+          </Button>
         </div>
-      )}
-
-      <Separator className="my-8" />
-
-      <div className="text-center">
-        <p className="text-gray-500 mb-4">
-          Need professional help implementing these suggestions?
-        </p>
-        <Button
-          className="bg-blue-600 hover:bg-blue-700"
-          onClick={() => (window.location.href = "/pricing")}
-        >
-          Upgrade to Professional CV Service
-        </Button>
       </div>
+
+      <PremiumFeature feature="detailedAnalysis">
+        <div className="grid gap-6 md:grid-cols-2">
+          <Card>
+            <CardHeader>
+              <CardTitle>Industry Analysis</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-gray-600">
+                Your CV aligns with {analysisData.skills?.length || 0} key industry skills.
+                Here's how your experience compares to industry standards:
+              </p>
+              {/* Add industry comparison visualization */}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Keyword Optimization</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-gray-600">
+                Based on your target industry, we recommend including these keywords:
+              </p>
+              {/* Add keyword suggestions */}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Experience Analysis</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {analysisData.experience?.map((exp, index) => (
+                  <div key={index} className="border-b pb-4 last:border-0">
+                    <h4 className="font-medium">{exp.title}</h4>
+                    <p className="text-sm text-gray-600">{exp.company}</p>
+                    <p className="text-sm text-gray-500">{exp.duration}</p>
+                    <p className="text-sm mt-2">{exp.description}</p>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Education Analysis</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {analysisData.education?.map((edu, index) => (
+                  <div key={index} className="border-b pb-4 last:border-0">
+                    <h4 className="font-medium">{edu.degree}</h4>
+                    <p className="text-sm text-gray-600">{edu.institution}</p>
+                    <p className="text-sm text-gray-500">{edu.year}</p>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle>Recommendations</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="list-disc pl-5 space-y-2">
+              {analysisData.recommendations?.map((rec, index) => (
+                <li key={index} className="text-sm text-gray-600">
+                  {rec}
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      </PremiumFeature>
     </div>
   );
-};
-
-export default DetailedAnalysis;
+}

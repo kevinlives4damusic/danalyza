@@ -1,46 +1,51 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { CheckCircle, Loader2 } from "lucide-react";
+import { CheckCircle, Loader2, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { checkSubscriptionStatus } from "@/lib/polar";
-import { useAuth } from "@/lib/auth";
+import { useUser } from "@/components/auth/UserContext";
+import { toast } from "@/components/ui/use-toast";
 
-const PaymentSuccess = () => {
-  const [loading, setLoading] = useState(true);
+export function PaymentSuccess() {
+  const [isVerifying, setIsVerifying] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { user } = useAuth();
+  const { user } = useUser();
   const sessionId = searchParams.get("session_id");
 
   useEffect(() => {
-    const verifySubscription = async () => {
+    async function verifySubscription() {
       if (!user || !sessionId) {
-        setError("Invalid session");
-        setLoading(false);
+        setError("Invalid session or user not logged in");
+        setIsVerifying(false);
         return;
       }
 
       try {
-        const subscription = await checkSubscriptionStatus(user.uid);
+        const subscription = await checkSubscriptionStatus(user.id);
+        
         if (subscription.status === "active") {
-          // Update user's subscription status in your database if needed
-          setLoading(false);
+          toast({
+            title: "Success!",
+            description: "Your subscription has been activated.",
+          });
+          setIsVerifying(false);
         } else {
-          setError("Subscription verification failed");
-          setLoading(false);
+          setError("Subscription verification failed. Please contact support.");
+          setIsVerifying(false);
         }
       } catch (error) {
         console.error("Error verifying subscription:", error);
-        setError("Failed to verify subscription");
-        setLoading(false);
+        setError("Failed to verify subscription. Please try again or contact support.");
+        setIsVerifying(false);
       }
-    };
+    }
 
     verifySubscription();
   }, [user, sessionId]);
 
-  if (loading) {
+  if (isVerifying) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
@@ -57,17 +62,27 @@ const PaymentSuccess = () => {
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="h-12 w-12 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
-            <span className="text-red-600 text-2xl">×</span>
-          </div>
+        <div className="text-center max-w-md mx-auto px-4">
+          <XCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
           <h2 className="text-2xl font-semibold text-gray-900 mb-2">
             Something went wrong
           </h2>
           <p className="text-gray-600 mb-6">{error}</p>
-          <Button onClick={() => navigate("/pricing")}>
-            Return to Pricing
-          </Button>
+          <div className="space-y-4">
+            <Button
+              className="w-full"
+              onClick={() => navigate("/pricing")}
+            >
+              Return to Pricing
+            </Button>
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => window.location.href = "mailto:support@example.com"}
+            >
+              Contact Support
+            </Button>
+          </div>
         </div>
       </div>
     );
@@ -78,11 +93,10 @@ const PaymentSuccess = () => {
       <div className="text-center max-w-xl mx-auto px-4">
         <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-6" />
         <h1 className="text-3xl font-bold text-gray-900 mb-4">
-          Payment Successful!
+          Welcome to Premium!
         </h1>
         <p className="text-xl text-gray-600 mb-8">
-          Thank you for subscribing. Your account has been upgraded and you now have
-          access to all premium features.
+          Your account has been upgraded successfully. You now have access to all premium features.
         </p>
         <div className="space-y-4">
           <Button
@@ -102,6 +116,6 @@ const PaymentSuccess = () => {
       </div>
     </div>
   );
-};
+}
 
 export default PaymentSuccess; 

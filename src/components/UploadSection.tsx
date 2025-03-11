@@ -7,9 +7,10 @@ import { Upload, File, X, AlertCircle, CheckCircle } from "lucide-react";
 import { Alert, AlertDescription } from "./ui/alert";
 import { processCVFile } from "@/lib/pdfAnalyzer";
 import { useUser } from "./auth/UserContext";
+import { AnalysisResults } from "@/lib/types/analysis";
 
 type UploadSectionProps = {
-  onFileUploaded?: (file: File, results: any) => void;
+  onFileUploaded?: (file: File, results: AnalysisResults) => void;
   className?: string;
 };
 
@@ -98,21 +99,21 @@ const UploadSection = ({
             setUploadProgress(100);
             setUploadStatus("success");
             onFileUploaded(selectedFile, analysisResults);
-          } catch (processingError: any) {
+          } catch (processingError: unknown) {
             console.error("Error processing CV:", processingError);
             
             // Display a more specific error message if available
-            const errorMsg = processingError.message || "There was an error processing your CV. Please try again.";
+            const errorMsg = processingError instanceof Error ? processingError.message : "There was an error processing your CV. Please try again.";
             setErrorMessage(errorMsg);
             setUploadStatus("error");
             setUploadProgress(0);
             clearInterval(uploadInterval);
           }
-        } catch (error: any) {
+        } catch (error: unknown) {
           console.error("Error in upload process:", error);
           
           // Display a more specific error message if available
-          const errorMsg = error.message || "There was an error uploading your CV. Please try again.";
+          const errorMsg = error instanceof Error ? error.message : "There was an error uploading your CV. Please try again.";
           setErrorMessage(errorMsg);
           setUploadStatus("error");
           setUploadProgress(0);

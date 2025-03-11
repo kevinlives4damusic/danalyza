@@ -4,24 +4,27 @@ import { useUser } from "@/components/auth/UserContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
+import { useErrorHandler } from "@/lib/hooks/useErrorHandler";
+import ErrorBoundary from "@/components/ErrorBoundary";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
 const Login = () => {
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
-  const [isSignUp, setIsSignUp] = useState(false);
-  const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const { error, handleError, clearError } = useErrorHandler();
   const { login, signup, loginWithGoogle } = useUser();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
+    clearError();
     setIsLoading(true);
 
     try {
@@ -31,22 +34,22 @@ const Login = () => {
         await login(email, password);
       }
       navigate("/");
-    } catch (error: any) {
-      setError(error.message || "Authentication failed. Please try again.");
+    } catch (error) {
+      handleError(error);
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleGoogleLogin = async () => {
-    setError("");
+    clearError();
     setIsLoading(true);
 
     try {
       await loginWithGoogle();
       navigate("/");
-    } catch (error: any) {
-      setError(error.message || "Google authentication failed. Please try again.");
+    } catch (error) {
+      handleError(error);
     } finally {
       setIsLoading(false);
     }
@@ -55,99 +58,88 @@ const Login = () => {
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       <Header />
-
       <main className="flex-1 pt-20 pb-10">
         <div className="container mx-auto px-4 py-8">
-          <div className="max-w-md mx-auto bg-white p-8 rounded-lg shadow-md">
-            <h1 className="text-2xl font-bold text-center mb-6">
-              {isSignUp ? "Create an Account" : "Log In"}
-            </h1>
-
-            {error && (
-              <Alert variant="destructive" className="mb-4">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {isSignUp && (
-                <div className="space-y-2">
-                  <Label htmlFor="name">Full Name</Label>
-                  <Input
-                    id="name"
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    required={isSignUp}
-                    placeholder="John Doe"
-                  />
+          <ErrorBoundary>
+            <Card className="w-full max-w-md mx-auto">
+              <CardHeader className="space-y-1">
+                <CardTitle className="text-2xl font-bold">
+                  {isSignUp ? "Create an Account" : "Log In"}
+                </CardTitle>
+                {error && (
+                  <Alert variant="destructive">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>{error}</AlertDescription>
+                  </Alert>
+                )}
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  {isSignUp && (
+                    <div className="space-y-2">
+                      <Label htmlFor="name">Full Name</Label>
+                      <Input
+                        id="name"
+                        type="text"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        required={isSignUp}
+                        placeholder="John Doe"
+                      />
+                    </div>
+                  )}
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                      placeholder="your@email.com"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="password">Password</Label>
+                    <Input
+                      id="password"
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      placeholder="••••••••"
+                    />
+                  </div>
+                  <Button type="submit" className="w-full" disabled={isLoading}>
+                    {isLoading
+                      ? "Loading..."
+                      : isSignUp
+                      ? "Create Account"
+                      : "Log In"}
+                  </Button>
+                </form>
+                <div className="text-center">
+                  <p className="text-sm text-gray-600">
+                    {isSignUp ? "Already have an account?" : "Don't have an account?"}
+                    <button
+                      type="button"
+                      onClick={() => setIsSignUp(!isSignUp)}
+                      className="ml-1 text-blue-600 hover:text-blue-800"
+                    >
+                      {isSignUp ? "Log In" : "Sign Up"}
+                    </button>
+                  </p>
                 </div>
-              )}
-
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  placeholder="your@email.com"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  placeholder="••••••••"
-                />
-              </div>
-
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={isLoading}
-              >
-                {isLoading
-                  ? "Loading..."
-                  : isSignUp
-                  ? "Create Account"
-                  : "Log In"}
-              </Button>
-            </form>
-
-            <div className="mt-4 text-center">
-              <p className="text-sm text-gray-600">
-                {isSignUp ? "Already have an account?" : "Don't have an account?"}
-                <button
-                  type="button"
-                  onClick={() => setIsSignUp(!isSignUp)}
-                  className="ml-1 text-blue-600 hover:text-blue-800"
-                >
-                  {isSignUp ? "Log In" : "Sign Up"}
-                </button>
-              </p>
-            </div>
-
-            <div className="mt-6">
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-300"></div>
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-gray-300" />
+                  </div>
+                  <div className="relative flex justify-center text-sm">
+                    <span className="px-2 bg-white text-gray-500">
+                      Or continue with
+                    </span>
+                  </div>
                 </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-white text-gray-500">
-                    Or continue with
-                  </span>
-                </div>
-              </div>
-
-              <div className="mt-6">
                 <Button
                   type="button"
                   variant="outline"
@@ -180,15 +172,14 @@ const Login = () => {
                   </svg>
                   Google
                 </Button>
-              </div>
-            </div>
-          </div>
+              </CardContent>
+            </Card>
+          </ErrorBoundary>
         </div>
       </main>
-
       <Footer />
     </div>
   );
 };
 
-export default Login; 
+export default Login;
