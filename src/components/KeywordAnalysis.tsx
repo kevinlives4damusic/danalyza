@@ -3,41 +3,24 @@ import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Badge } from "./ui/badge";
 
-type KeywordItem = {
+interface Keyword {
   word: string;
   count: number;
   relevance: "high" | "medium" | "low";
   missing?: boolean;
-};
+}
 
-type KeywordAnalysisProps = {
-  keywords: KeywordItem[];
-  missingKeywords?: KeywordItem[];
-  title?: string;
+interface KeywordAnalysisProps {
+  title: string;
+  keywords: Keyword[];
+  missingKeywords?: Keyword[];
   className?: string;
-};
+}
 
 const KeywordAnalysis = ({
-  keywords = [
-    { word: "project management", count: 3, relevance: "high" },
-    { word: "leadership", count: 2, relevance: "high" },
-    { word: "agile", count: 1, relevance: "medium" },
-    { word: "communication", count: 4, relevance: "high" },
-    { word: "problem-solving", count: 2, relevance: "medium" },
-    { word: "teamwork", count: 3, relevance: "medium" },
-    { word: "analytical", count: 1, relevance: "low" },
-  ],
-  missingKeywords = [
-    { word: "scrum", count: 0, relevance: "high", missing: true },
-    { word: "kanban", count: 0, relevance: "medium", missing: true },
-    {
-      word: "stakeholder management",
-      count: 0,
-      relevance: "high",
-      missing: true,
-    },
-  ],
-  title = "Keyword Analysis",
+  title,
+  keywords,
+  missingKeywords = [],
   className,
 }: KeywordAnalysisProps) => {
   const getRelevanceColor = (relevance: string, missing?: boolean) => {
@@ -64,45 +47,45 @@ const KeywordAnalysis = ({
         </p>
       </CardHeader>
       <CardContent>
-        <div className="mb-4">
-          <h3 className="text-sm font-medium mb-2">Present Keywords</h3>
-          <div className="flex flex-wrap gap-2">
-            {keywords.map((keyword, index) => (
-              <Badge
-                key={index}
-                variant="outline"
-                className={cn(
-                  "px-2 py-1 text-xs",
-                  getRelevanceColor(keyword.relevance),
-                )}
-              >
-                {keyword.word} ({keyword.count})
-              </Badge>
-            ))}
-          </div>
-        </div>
-
-        {missingKeywords && missingKeywords.length > 0 && (
-          <div>
-            <h3 className="text-sm font-medium mb-2">
-              Missing Important Keywords
-            </h3>
-            <div className="flex flex-wrap gap-2">
-              {missingKeywords.map((keyword, index) => (
-                <Badge
-                  key={index}
-                  variant="outline"
-                  className={cn(
-                    "px-2 py-1 text-xs",
-                    getRelevanceColor(keyword.relevance, true),
-                  )}
-                >
-                  {keyword.word}
-                </Badge>
-              ))}
+        <div className="space-y-4">
+          {keywords.length > 0 && (
+            <div>
+              <h4 className="text-sm font-medium mb-2">Present Keywords</h4>
+              <div className="flex flex-wrap gap-2">
+                {keywords.map((keyword, index) => (
+                  <span
+                    key={index}
+                    className={cn(
+                      "px-2 py-1 rounded-full text-sm border",
+                      getRelevanceColor(keyword.relevance)
+                    )}
+                  >
+                    {keyword.word} ({keyword.count})
+                  </span>
+                ))}
+              </div>
             </div>
-          </div>
-        )}
+          )}
+
+          {missingKeywords.length > 0 && (
+            <div>
+              <h4 className="text-sm font-medium mb-2">Missing Keywords</h4>
+              <div className="flex flex-wrap gap-2">
+                {missingKeywords.map((keyword, index) => (
+                  <span
+                    key={index}
+                    className={cn(
+                      "px-2 py-1 rounded-full text-sm border",
+                      getRelevanceColor(keyword.relevance, true)
+                    )}
+                  >
+                    {keyword.word}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
       </CardContent>
     </Card>
   );

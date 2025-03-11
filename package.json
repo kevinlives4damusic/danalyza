@@ -4,12 +4,8 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "copy-pdf-worker": "node copy-pdf-worker.cjs",
-    "predev": "npm run copy-pdf-worker",
     "dev": "vite",
-    "prebuild": "npm run copy-pdf-worker",
-    "build": "tsc ; vite build",
-    "build-no-errors": "tsc ; vite build",
+    "build": "tsc && vite build",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "types:supabase": "npx supabase gen types typescript --project-id $SUPABASE_PROJECT_ID > src/types/supabase.ts"
