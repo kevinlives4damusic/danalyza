@@ -3,22 +3,20 @@
   "devCommand": "npm run dev",
   "installCommand": "npm install",
   "framework": "vite",
+  "outputDirectory": "dist",
   "rewrites": [
     {
       "source": "/(.*)",
-      "destination": "/index.html"
+      "destination": "/"
     }
   ],
   "env": {
-    "VITE_FIREBASE_API_KEY": "@vite_firebase_api_key",
-    "VITE_FIREBASE_AUTH_DOMAIN": "@vite_firebase_auth_domain",
-    "VITE_FIREBASE_PROJECT_ID": "@vite_firebase_project_id",
-    "VITE_FIREBASE_STORAGE_BUCKET": "@vite_firebase_storage_bucket",
-    "VITE_FIREBASE_MESSAGING_SENDER_ID": "@vite_firebase_messaging_sender_id",
-    "VITE_FIREBASE_APP_ID": "@vite_firebase_app_id",
-    "VITE_FIREBASE_MEASUREMENT_ID": "@vite_firebase_measurement_id",
-    "VITE_DEEPSEEK_API_KEY": "@vite_deepseek_api_key",
-    "POLAR_ACCESS_TOKEN": "@polar_access_token",
-    "POLAR_PRODUCT_ID": "@polar_product_id"
+    "VITE_FIREBASE_API_KEY": "@firebase_api_key",
+    "VITE_FIREBASE_AUTH_DOMAIN": "@firebase_auth_domain",
+    "VITE_FIREBASE_PROJECT_ID": "@firebase_project_id",
+    "VITE_FIREBASE_STORAGE_BUCKET": "@firebase_storage_bucket",
+    "VITE_FIREBASE_MESSAGING_SENDER_ID": "@firebase_messaging_sender_id",
+    "VITE_FIREBASE_APP_ID": "@firebase_app_id",
+    "VITE_YOCO_PUBLIC_KEY": "@yoco_public_key"
   }
 } 

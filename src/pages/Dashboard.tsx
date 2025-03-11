@@ -13,6 +13,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import { PromotionalBanner } from "@/components/PromotionalBanner";
+import { useUser } from "@/components/auth/UserContext";
 
 interface Analysis {
   id: string;
@@ -29,6 +31,7 @@ const Dashboard = () => {
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { user: userContext } = useUser();
 
   useEffect(() => {
     if (!user) {
@@ -69,6 +72,9 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       <Header />
+
+      {/* Add floating banner for non-premium users */}
+      {!userContext?.isPremium && <PromotionalBanner variant="floating" />}
 
       <main className="flex-1 container mx-auto px-4 py-8 mt-16">
         <ErrorBoundary>
@@ -170,6 +176,13 @@ const Dashboard = () => {
           </div>
         </ErrorBoundary>
       </main>
+
+      {/* Add inline banner for non-premium users at a strategic location */}
+      {!userContext?.isPremium && (
+        <div className="w-full max-w-3xl mx-auto">
+          <PromotionalBanner variant="inline" />
+        </div>
+      )}
 
       <Footer />
     </div>

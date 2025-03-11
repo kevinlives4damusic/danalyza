@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { CheckCircle, Loader2, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { checkSubscriptionStatus } from "@/lib/polar";
+import { checkSubscriptionStatus } from "@/lib/yoco";
 import { useUser } from "@/components/auth/UserContext";
 import { toast } from "@/components/ui/use-toast";
 
@@ -10,22 +10,33 @@ export function PaymentSuccess() {
   const [isVerifying, setIsVerifying] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
   const { user } = useUser();
-  const sessionId = searchParams.get("session_id");
+
+  // Helper function to safely get user ID
+  const getUserId = () => {
+    if (!user) return null;
+    return (user as any).uid || user.id;
+  };
 
   useEffect(() => {
     async function verifySubscription() {
-      if (!user || !sessionId) {
-        setError("Invalid session or user not logged in");
+      if (!user) {
+        setError("User not logged in");
+        setIsVerifying(false);
+        return;
+      }
+
+      const userId = getUserId();
+      if (!userId) {
+        setError("Could not determine user ID");
         setIsVerifying(false);
         return;
       }
 
       try {
-        const subscription = await checkSubscriptionStatus(user.id);
+        const hasSubscription = await checkSubscriptionStatus(userId);
         
-        if (subscription.status === "active") {
+        if (hasSubscription) {
           toast({
             title: "Success!",
             description: "Your subscription has been activated.",
@@ -43,7 +54,7 @@ export function PaymentSuccess() {
     }
 
     verifySubscription();
-  }, [user, sessionId]);
+  }, [user]);
 
   if (isVerifying) {
     return (

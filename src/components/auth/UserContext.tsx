@@ -10,28 +10,30 @@ import {
 } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 
-type User = {
+interface User {
   id: string;
   name: string;
   email: string;
   avatar?: string;
-} | null;
+  isPremium?: boolean;
+}
 
-type UserContextType = {
-  user: User;
+interface UserContextType {
+  user: User | null;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
   signup: (name: string, email: string, password: string) => Promise<void>;
   logout: () => void;
-};
+  setUser: (user: User | null) => void;
+}
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [user, setUser] = useState<User>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -113,6 +115,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
         loginWithGoogle,
         signup,
         logout,
+        setUser,
       }}
     >
       {children}

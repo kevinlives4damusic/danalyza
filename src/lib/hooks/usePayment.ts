@@ -1,15 +1,23 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { createCheckoutSession } from '@/lib/polar';
-import { useUser } from '@/components/auth/UserContext';
 import { toast } from '@/components/ui/use-toast';
+import { createYocoPopup } from '@/lib/yoco';
+import { useUser } from '@/components/auth/UserContext';
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 export function usePayment() {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { user } = useUser();
 
-  const handleSubscribe = async (planId: string) => {
+  // Helper function to safely get user ID
+  const getUserId = () => {
+    if (!user) return null;
+    return (user as any).uid || user.id;
+  };
+
+  const handleSubscribe = async (planId: string, amount: number) => {
     try {
       setIsLoading(true);
 
@@ -30,28 +38,78 @@ export function usePayment() {
         return;
       }
 
-      const successUrl = `${window.location.origin}/payment/success?session_id={CHECKOUT_SESSION_ID}`;
-      const cancelUrl = `${window.location.origin}/pricing`;
+      // Convert amount to cents for Yoco
+      const amountInCents = Math.round(amount * 100);
 
-      const session = await createCheckoutSession(planId, successUrl, cancelUrl);
-      
-      if (session.url) {
-        window.location.href = session.url;
-      }
-    } catch (error) {
-      console.error("Error subscribing to plan:", error);
-      toast({
-        title: "Error",
-        description: "Failed to process subscription. Please try again.",
-        variant: "destructive",
+      createYocoPopup({
+        amountInCents,
+        currency: 'ZAR',
+        name: 'CV Analyzer Subscription',
+        description: `Monthly subscription for ${planId} plan`,
+        callback: async (result) => {
+          if (result.error) {
+            toast({
+              title: 'Payment Failed',
+              description: result.message,
+              variant: 'destructive',
+            });
+            setIsLoading(false);
+          } else {
+            try {
+              // Verify payment with backend
+              const response = await fetch(`${API_URL}/api/payments/verify`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  token: result.data.id,
+                  amount: amount,
+                  currency: 'ZAR',
+                  metadata: {
+                    userId: getUserId(),
+                    planId: planId,
+                  },
+                }),
+              });
+
+              const data = await response.json();
+
+              if (data.success) {
+                toast({
+                  title: 'Payment Successful',
+                  description: 'Your subscription has been activated.',
+                });
+                
+                // Navigate to success page with payment ID
+                navigate(`/payment-success?payment_id=${data.data?.id || 'unknown'}`);
+              } else {
+                throw new Error(data.message);
+              }
+            } catch (error: any) {
+              toast({
+                title: 'Verification Failed',
+                description: error.message || 'Failed to verify payment',
+                variant: 'destructive',
+              });
+              setIsLoading(false);
+            }
+          }
+        },
       });
-    } finally {
+    } catch (error) {
+      console.error('Error processing payment:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to process payment. Please try again.',
+        variant: 'destructive',
+      });
       setIsLoading(false);
     }
   };
 
   return {
     isLoading,
-    handleSubscribe
+    handleSubscribe,
   };
 } 

@@ -1,12 +1,20 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { ArrowRight, FileText, Zap, Target, Award } from "lucide-react";
+import { PromotionalBanner } from "@/components/PromotionalBanner";
+import { useUser } from "@/components/auth/UserContext";
+import UploadSection from "@/components/UploadSection";
+import AnalysisResults from "@/components/AnalysisResults";
 
 const Home = () => {
   const navigate = useNavigate();
+  const { user } = useUser();
+  const [currentView, setCurrentView] = useState<"upload" | "results" | "detailed">("upload");
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analysisResults, setAnalysisResults] = useState<any>(null);
 
   const features = [
     {
@@ -31,86 +39,89 @@ const Home = () => {
     },
   ];
 
+  const handleFileUpload = async (uploadedFile: File, results: any) => {
+    setIsAnalyzing(true);
+    try {
+      setAnalysisResults(results);
+      setCurrentView("results");
+    } catch (error) {
+      console.error("Error analyzing file:", error);
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
+  const handleViewDetailed = () => {
+    setCurrentView("detailed");
+  };
+
+  const handleUploadNew = () => {
+    setAnalysisResults(null);
+    setCurrentView("upload");
+  };
+
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-gray-50">
       <Header />
-      
-      <main className="flex-1">
-        {/* Hero Section */}
-        <section className="bg-gradient-to-b from-gray-50 to-white py-20">
-          <div className="container mx-auto px-4">
-            <div className="max-w-4xl mx-auto text-center">
-              <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
-                Your CV, Optimized by AI
+
+      {/* Add floating banner for non-premium users */}
+      {!user?.isPremium && <PromotionalBanner variant="floating" />}
+
+      <main className="flex-1 pt-20 pb-10">
+        <div className="container mx-auto px-4 py-8">
+          {currentView === "upload" && (
+            <div className="flex flex-col items-center">
+              <h1 className="text-3xl font-bold text-center text-gray-800 mb-4">
+                CV Reviewer
               </h1>
-              <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-                Get instant, professional feedback on your CV and increase your chances
-                of landing your dream job with our AI-powered analysis.
+              <p className="text-center text-gray-600 max-w-2xl mb-8">
+                Upload your CV for instant AI-powered analysis and feedback. Get
+                professional insights to improve your job prospects.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button
-                  size="lg"
-                  className="bg-blue-600 hover:bg-blue-700"
-                  onClick={() => navigate("/upload")}
-                >
-                  Analyze Your CV
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </Button>
-                <Button
-                  size="lg"
-                  variant="outline"
-                  onClick={() => navigate("/pricing")}
-                >
-                  View Pricing
-                </Button>
-              </div>
-            </div>
-          </div>
-        </section>
 
-        {/* Features Section */}
-        <section className="py-20">
-          <div className="container mx-auto px-4">
-            <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">
-              Why Choose Our CV Analyzer
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-              {features.map((feature, index) => (
-                <div
-                  key={index}
-                  className="bg-white p-6 rounded-lg shadow-sm border border-gray-100"
-                >
-                  <div className="text-blue-500 mb-4">{feature.icon}</div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                    {feature.title}
-                  </h3>
-                  <p className="text-gray-600">{feature.description}</p>
+              {/* Add inline banner for non-premium users after upload section */}
+              {!user?.isPremium && (
+                <div className="w-full max-w-3xl mb-8">
+                  <PromotionalBanner variant="inline" />
                 </div>
-              ))}
-            </div>
-          </div>
-        </section>
+              )}
 
-        {/* CTA Section */}
-        <section className="bg-blue-600 py-20">
-          <div className="container mx-auto px-4 text-center">
-            <h2 className="text-3xl font-bold text-white mb-6">
-              Ready to Improve Your CV?
-            </h2>
-            <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
-              Join thousands of job seekers who have improved their chances with our
-              AI-powered CV analysis.
-            </p>
-            <Button
-              size="lg"
-              variant="secondary"
-              onClick={() => navigate("/upload")}
-            >
-              Get Started Now
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-          </div>
-        </section>
+              <UploadSection onFileUploaded={handleFileUpload} />
+            </div>
+          )}
+
+          {currentView === "results" && (
+            <div>
+              <AnalysisResults
+                isLoading={isAnalyzing}
+                results={analysisResults}
+              />
+
+              {!isAnalyzing && (
+                <div className="mt-8 flex flex-col md:flex-row items-center justify-center gap-6">
+                  <button
+                    onClick={handleViewDetailed}
+                    className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors"
+                  >
+                    View Detailed Analysis
+                  </button>
+
+                  <button
+                    onClick={handleUploadNew}
+                    className="px-6 py-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-md transition-colors"
+                  >
+                    Upload New CV
+                  </button>
+
+                  {/* Add compact banner in results view for non-premium users */}
+                  {!user?.isPremium && (
+                    <PromotionalBanner variant="compact" className="ml-4" />
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </main>
 
       <Footer />
